@@ -6,12 +6,12 @@ pygame.init()
 
 
 class DrawInfo:
-    black = 0, 0, 0
-    white = 255, 255, 255
-    green = 0, 255, 0
-    red = 255, 0, 0
-    gray = 127, 127, 127
-    lightGray = 191, 191, 191
+    black = (42, 47, 79)
+    white = (253, 226, 243)
+    green = (252, 79, 0)
+    red = (247, 149, 64)
+    gray = (145, 127, 179)
+    lightGray = (229, 190, 236)
 
     backgroundColor = black
     blockColors = [gray, lightGray, white]
