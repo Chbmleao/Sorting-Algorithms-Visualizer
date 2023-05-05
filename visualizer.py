@@ -140,10 +140,23 @@ def insertionSort(drawInfo, ascending=True):
         ):
             list[j + 1] = list[j]
             j -= 1
-            drawList(drawInfo, {(j + 1): (drawInfo.red), j: (drawInfo.green)}, True)
+            drawList(drawInfo, {j + 1: (drawInfo.red), j: (drawInfo.green)}, True)
             yield True
 
         list[j + 1] = key
+
+
+def bubbleSort(drawInfo, ascending=True):
+    list = drawInfo.list
+    n = len(list)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if (list[j] > list[j + 1] and ascending) or (
+                list[j] < list[j + 1] and not ascending
+            ):
+                list[j], list[j + 1] = list[j + 1], list[j]
+                drawList(drawInfo, {j + 1: (drawInfo.red), j: (drawInfo.green)}, True)
+                yield True
 
 
 def main():
@@ -200,6 +213,10 @@ def main():
             elif event.key == pygame.K_i and not sorting:
                 sortingAlgorithm = insertionSort
                 sortingAlgorithmName = "Insertion Sort"
+
+            elif event.key == pygame.K_b and not sorting:
+                sortingAlgorithm = bubbleSort
+                sortingAlgorithmName = "Bubble Sort"
 
     pygame.quit()
 
