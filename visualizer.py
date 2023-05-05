@@ -11,6 +11,7 @@ class DrawInfo:
     red = 255, 0, 0
     gray = 127, 127, 127
     lightGray = 191, 191, 191
+
     backgroundColor = black
     blockColors = [gray, lightGray, white]
 
@@ -23,9 +24,9 @@ class DrawInfo:
 
         self.window = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Sorting Algorithms Visualizer")
-        self.set_list(list)
+        self.setList(list)
 
-    def set_list(self, list):
+    def setList(self, list):
         self.list = list
         self.maxVal = max(list)
         self.minVal = min(list)
@@ -51,10 +52,17 @@ def createList(n, minVal, maxVal):
 def draw(drawInfo):
     drawInfo.window.fill(drawInfo.backgroundColor)
 
+    drawList(drawInfo)
+
+    pygame.display.update()
+
+
+def drawList(drawInfo):
     currentX = drawInfo.startX
     currentColorIndex = 0
     for elem in drawInfo.list:
         currentBlockHeight = elem * drawInfo.blockHeight
+        currentY = drawInfo.height - currentBlockHeight
         currentColor = drawInfo.blockColors[
             currentColorIndex % len(drawInfo.blockColors)
         ]
@@ -63,15 +71,13 @@ def draw(drawInfo):
             currentColor,
             pygame.Rect(
                 currentX,
-                drawInfo.height - currentBlockHeight,
+                currentY,
                 drawInfo.blockWidth,
                 currentBlockHeight,
             ),
         )
         currentX += drawInfo.blockWidth
         currentColorIndex += 1
-
-    pygame.display.update()
 
 
 def main():
@@ -93,6 +99,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+            if event.type != pygame.KEYDOWN:
+                continue
+
+            if event.key == pygame.K_r:
+                list = createList(listSize, minListVal, maxListVal)
+                drawInfo.setList(list)
 
     pygame.quit()
 
