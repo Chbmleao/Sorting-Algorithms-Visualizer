@@ -80,6 +80,18 @@ def drawList(drawInfo):
         currentColorIndex += 1
 
 
+def insertionSort(list):
+    n = len(list)
+    for i in range(1, n):
+        key = list[i]
+        j = i - 1
+
+        while j >= 0 and key < list[j]:
+            list[j + 1] = list[j]
+            j -= 1
+        list[j + 1] = key
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -106,6 +118,9 @@ def main():
             if event.key == pygame.K_r:
                 list = createList(listSize, minListVal, maxListVal)
                 drawInfo.setList(list)
+
+            if event.key == pygame.K_s:
+                insertionSort(drawInfo.list)
 
     pygame.quit()
 
