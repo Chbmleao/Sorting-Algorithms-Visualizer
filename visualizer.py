@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 pygame.init()
 
@@ -16,7 +17,10 @@ class DrawInfo:
     blockColors = [gray, lightGray, white]
 
     sidePad = 100
-    topPad = 100
+    topPad = 200
+
+    font = pygame.font.SysFont("arial", 25)
+    largeFont = pygame.font.SysFont("arial", 35)
 
     def __init__(self, width, height, list):
         self.width = width
@@ -32,7 +36,7 @@ class DrawInfo:
         self.minVal = min(list)
 
         self.blockWidth = round((self.width - self.sidePad) / len(list))
-        self.blockHeight = round(
+        self.blockHeight = math.floor(
             (self.height - self.topPad) / (self.maxVal - self.minVal)
         )
 
@@ -49,23 +53,63 @@ def createList(n, minVal, maxVal):
     return list
 
 
-def draw(drawInfo):
+def draw(drawInfo, algorithmName, ascending):
     drawInfo.window.fill(drawInfo.backgroundColor)
+
+    drawText(drawInfo, algorithmName, ascending)
 
     drawList(drawInfo)
 
     pygame.display.update()
 
 
-def drawList(drawInfo):
+def drawText(drawInfo, algorithmName, ascending):
+    tittleStr = algorithmName
+    if ascending:
+        tittleStr += " - Ascending"
+    else:
+        tittleStr += " - Descending"
+    tittle = drawInfo.largeFont.render(tittleStr, 1, drawInfo.white)
+    x = drawInfo.width / 2 - tittle.get_width() / 2
+    y = 10
+    drawInfo.window.blit(tittle, (x, y))
+
+    controls = drawInfo.font.render(
+        "R - reset | Space - Sort | A - Ascending | D - Descending", 1, drawInfo.white
+    )
+    x = drawInfo.width / 2 - controls.get_width() / 2
+    y += tittle.get_height() + 10
+    drawInfo.window.blit(controls, (x, y))
+
+    algorithms = drawInfo.font.render(
+        "I - Insertion Sort | B - Bubble Sort | Q - Quick Sort", 1, drawInfo.white
+    )
+    x = drawInfo.width / 2 - algorithms.get_width() / 2
+    y += controls.get_height() + 10
+    drawInfo.window.blit(algorithms, (x, y))
+
+
+def drawList(drawInfo, colorPositions={}, clearBackground=False):
+    if clearBackground:
+        clearRect = (
+            drawInfo.sidePad // 2,
+            drawInfo.topPad,
+            drawInfo.width - drawInfo.sidePad // 2,
+            drawInfo.height - drawInfo.topPad,
+        )
+        pygame.draw.rect(drawInfo.window, drawInfo.backgroundColor, clearRect)
+
     currentX = drawInfo.startX
-    currentColorIndex = 0
+    currentIndex = 0
     for elem in drawInfo.list:
         currentBlockHeight = elem * drawInfo.blockHeight
+
         currentY = drawInfo.height - currentBlockHeight
-        currentColor = drawInfo.blockColors[
-            currentColorIndex % len(drawInfo.blockColors)
-        ]
+
+        currentColor = drawInfo.blockColors[currentIndex % len(drawInfo.blockColors)]
+        if currentIndex in colorPositions:
+            currentColor = colorPositions[currentIndex]
+
         pygame.draw.rect(
             drawInfo.window,
             currentColor,
@@ -76,19 +120,29 @@ def drawList(drawInfo):
                 currentBlockHeight,
             ),
         )
+
         currentX += drawInfo.blockWidth
-        currentColorIndex += 1
+        currentIndex += 1
+
+    if clearBackground:
+        pygame.display.update()
 
 
-def insertionSort(list):
+def insertionSort(drawInfo, ascending=True):
+    list = drawInfo.list
     n = len(list)
     for i in range(1, n):
         key = list[i]
         j = i - 1
 
-        while j >= 0 and key < list[j]:
+        while j >= 0 and (
+            (key < list[j] and ascending) or (key > list[j]) and not ascending
+        ):
             list[j + 1] = list[j]
             j -= 1
+            drawList(drawInfo, {(j + 1): (drawInfo.red), j: (drawInfo.green)}, True)
+            yield True
+
         list[j + 1] = key
 
 
@@ -101,12 +155,25 @@ def main():
     maxListVal = 100
 
     list = createList(listSize, minListVal, maxListVal)
-    drawInfo = DrawInfo(800, 600, list)
+    drawInfo = DrawInfo(1366, 768, list)
+
+    sorting = False
+    ascending = True
+
+    sortingAlgorithm = insertionSort
+    sortingAlgorithmName = "Insertion Sort"
+    sortingAlgorithmGenerator = None
 
     while run:
         clock.tick(60)
 
-        draw(drawInfo)
+        if sorting:
+            try:
+                next(sortingAlgorithmGenerator)
+            except StopIteration:
+                sorting = False
+        else:
+            draw(drawInfo, sortingAlgorithmName, ascending)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -118,9 +185,21 @@ def main():
             if event.key == pygame.K_r:
                 list = createList(listSize, minListVal, maxListVal)
                 drawInfo.setList(list)
+                sorting = False
 
-            if event.key == pygame.K_s:
-                insertionSort(drawInfo.list)
+            elif event.key == pygame.K_SPACE and not sorting:
+                sorting = True
+                sortingAlgorithmGenerator = sortingAlgorithm(drawInfo, ascending)
+
+            elif event.key == pygame.K_a and not sorting:
+                ascending = True
+
+            elif event.key == pygame.K_d and not sorting:
+                ascending = False
+
+            elif event.key == pygame.K_i and not sorting:
+                sortingAlgorithm = insertionSort
+                sortingAlgorithmName = "Insertion Sort"
 
     pygame.quit()
 
