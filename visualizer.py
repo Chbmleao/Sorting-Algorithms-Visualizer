@@ -12,6 +12,7 @@ class DrawInfo:
     red = (247, 149, 64)
     gray = (145, 127, 179)
     lightGray = (229, 190, 236)
+    pink = (183, 19, 117)
 
     backgroundColor = black
     blockColors = [gray, lightGray, white]
@@ -159,6 +160,53 @@ def bubbleSort(drawInfo, ascending=True):
                 yield True
 
 
+def partition(list, low, high, drawInfo, ascending):
+    pivotIndex = (low + high) // 2
+    pivot = list[(low + high) // 2]
+    i = low - 1
+    j = high + 1
+
+    # drawList(drawInfo, {pivotIndex: (drawInfo.green)}, True)
+    # pygame.time.wait(100)
+    # # yield True
+
+    while True:
+        i += 1
+        while (list[i] < pivot and ascending) or (list[i] > pivot and not ascending):
+            i += 1
+
+        j -= 1
+        while (list[j] > pivot and ascending) or (list[j] < pivot and not ascending):
+            j -= 1
+
+        if i >= j:
+            return j
+
+        drawList(
+            drawInfo,
+            {i: (drawInfo.red), j: (drawInfo.red), pivotIndex: (drawInfo.pink)},
+            True,
+        )
+        pygame.time.wait(100)
+        list[i], list[j] = list[j], list[i]
+        drawList(
+            drawInfo,
+            {i: (drawInfo.green), j: (drawInfo.green), pivotIndex: (drawInfo.pink)},
+            True,
+        )
+        pygame.time.wait(100)
+
+
+def quickSort(drawInfo, ascending=True):
+    def _quickSort(drawInfo, low, high, ascending=True):
+        if low < high:
+            splitIndex = partition(drawInfo.list, low, high, drawInfo, ascending)
+            _quickSort(drawInfo, low, splitIndex, ascending)
+            _quickSort(drawInfo, splitIndex + 1, high, ascending)
+
+    _quickSort(drawInfo, 0, len(drawInfo.list) - 1, ascending)
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -181,9 +229,12 @@ def main():
         clock.tick(60)
 
         if sorting:
-            try:
-                next(sortingAlgorithmGenerator)
-            except StopIteration:
+            if sortingAlgorithmName != "Quick Sort":
+                try:
+                    next(sortingAlgorithmGenerator)
+                except StopIteration:
+                    sorting = False
+            else:
                 sorting = False
         else:
             draw(drawInfo, sortingAlgorithmName, ascending)
@@ -217,6 +268,10 @@ def main():
             elif event.key == pygame.K_b and not sorting:
                 sortingAlgorithm = bubbleSort
                 sortingAlgorithmName = "Bubble Sort"
+
+            elif event.key == pygame.K_q and not sorting:
+                sortingAlgorithm = quickSort
+                sortingAlgorithmName = "Quick Sort"
 
     pygame.quit()
 
