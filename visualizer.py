@@ -83,7 +83,9 @@ def drawText(drawInfo, algorithmName, ascending):
     drawInfo.window.blit(controls, (x, y))
 
     algorithms = drawInfo.font.render(
-        "I - Insertion Sort | B - Bubble Sort | Q - Quick Sort", 1, drawInfo.white
+        "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort",
+        1,
+        drawInfo.white,
     )
     x = drawInfo.width / 2 - algorithms.get_width() / 2
     y += controls.get_height() + 10
@@ -147,6 +149,22 @@ def insertionSort(drawInfo, ascending=True):
         list[j + 1] = key
 
 
+def selectionSort(drawInfo, ascending=True):
+    list = drawInfo.list
+    listSize = len(list)
+    for i in range(listSize):
+        minIndex = i
+        for j in range(i + 1, listSize):
+            drawList(drawInfo, {j: (drawInfo.red), minIndex: (drawInfo.green)}, True)
+            yield True
+            if (list[minIndex] > list[j] and ascending) or (
+                list[minIndex] < list[j] and not ascending
+            ):
+                minIndex = j
+
+        list[i], list[minIndex] = list[minIndex], list[i]
+
+
 def bubbleSort(drawInfo, ascending=True):
     list = drawInfo.list
     n = len(list)
@@ -165,10 +183,6 @@ def partition(list, low, high, drawInfo, ascending):
     pivot = list[(low + high) // 2]
     i = low - 1
     j = high + 1
-
-    # drawList(drawInfo, {pivotIndex: (drawInfo.green)}, True)
-    # pygame.time.wait(100)
-    # # yield True
 
     while True:
         i += 1
@@ -260,6 +274,10 @@ def main():
 
             elif event.key == pygame.K_d and not sorting:
                 ascending = False
+
+            elif event.key == pygame.K_s and not sorting:
+                sortingAlgorithm = selectionSort
+                sortingAlgorithmName = "Selection Sort"
 
             elif event.key == pygame.K_i and not sorting:
                 sortingAlgorithm = insertionSort
