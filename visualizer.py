@@ -83,7 +83,7 @@ def drawText(drawInfo, algorithmName, ascending):
     drawInfo.window.blit(controls, (x, y))
 
     algorithms = drawInfo.font.render(
-        "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort",
+        "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort | M - Merge Sort",
         1,
         drawInfo.white,
     )
@@ -221,6 +221,60 @@ def quickSort(drawInfo, ascending=True):
     _quickSort(drawInfo, 0, len(drawInfo.list) - 1, ascending)
 
 
+def mergeSort(drawInfo, ascending=True):
+    width = 1
+    list = drawInfo.list
+    listSize = len(list)
+
+    while width < listSize:
+        l = 0
+        while l < listSize:
+            r = min(l + (width * 2 - 1), listSize - 1)
+            m = min(l + width - 1, listSize - 1)
+
+            merge(list, l, m, r, drawInfo, ascending)
+            l += width * 2
+
+        width *= 2
+
+
+def merge(a, l, m, r, drawInfo, ascending=True):
+    n1 = m - l + 1
+    n2 = r - m
+    L = [0] * n1
+    R = [0] * n2
+    for i in range(0, n1):
+        L[i] = a[l + i]
+    for i in range(0, n2):
+        R[i] = a[m + i + 1]
+
+    i, j, k = 0, 0, l
+    while i < n1 and j < n2:
+        if (L[i] <= R[j] and ascending) or (L[i] >= R[j] and not ascending):
+            a[k] = L[i]
+            i += 1
+        else:
+            a[k] = R[j]
+            j += 1
+        drawList(drawInfo, {k: drawInfo.green}, True)
+        pygame.time.wait(100)
+        k += 1
+
+    while i < n1:
+        a[k] = L[i]
+        drawList(drawInfo, {k: drawInfo.green}, True)
+        pygame.time.wait(100)
+        i += 1
+        k += 1
+
+    while j < n2:
+        a[k] = R[j]
+        drawList(drawInfo, {k: drawInfo.green}, True)
+        pygame.time.wait(100)
+        j += 1
+        k += 1
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -243,7 +297,10 @@ def main():
         clock.tick(60)
 
         if sorting:
-            if sortingAlgorithmName != "Quick Sort":
+            if (
+                sortingAlgorithmName != "Quick Sort"
+                and sortingAlgorithmName != "Merge Sort"
+            ):
                 try:
                     next(sortingAlgorithmGenerator)
                 except StopIteration:
@@ -290,6 +347,10 @@ def main():
             elif event.key == pygame.K_q and not sorting:
                 sortingAlgorithm = quickSort
                 sortingAlgorithmName = "Quick Sort"
+
+            elif event.key == pygame.K_m and not sorting:
+                sortingAlgorithm = mergeSort
+                sortingAlgorithmName = "Merge Sort"
 
     pygame.quit()
 
