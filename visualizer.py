@@ -5,6 +5,14 @@ import math
 pygame.init()
 
 
+class SystemInfo:
+    def __init__(self, algoName, ascending, clockTime, listSize):
+        self.algorithmName = algoName
+        self.ascending = ascending
+        self.clockTime = clockTime
+        self.listSize = listSize
+
+
 class DrawInfo:
     black = (42, 47, 79)
     white = (253, 226, 243)
@@ -36,12 +44,10 @@ class DrawInfo:
         self.maxVal = max(list)
         self.minVal = min(list)
 
-        self.blockWidth = round((self.width - self.sidePad) / len(list))
-        self.blockHeight = math.floor(
-            (self.height - self.topPad) / (self.maxVal - self.minVal)
-        )
+        self.blockWidth = (self.width - self.sidePad) / len(list)
+        self.blockHeight = (self.height - self.topPad) / (self.maxVal - self.minVal)
 
-        self.startX = round(self.sidePad // 2)
+        self.startX = self.sidePad // 2
 
 
 def createList(n, minVal, maxVal):
@@ -54,37 +60,47 @@ def createList(n, minVal, maxVal):
     return list
 
 
-def draw(drawInfo, algorithmName, ascending, clockTime):
+def draw(drawInfo, systemInfo):
     drawInfo.window.fill(drawInfo.backgroundColor)
 
-    drawText(drawInfo, algorithmName, ascending, clockTime)
+    drawText(drawInfo, systemInfo)
 
     drawList(drawInfo)
 
     pygame.display.update()
 
 
-def drawText(drawInfo, algorithmName, ascending, clockTime):
-    tittleStr = algorithmName
-    if ascending:
+def drawText(drawInfo, systemInfo):
+    tittleStr = systemInfo.algorithmName
+    if systemInfo.ascending:
         tittleStr += " - Ascending"
     else:
         tittleStr += " - Descending"
-    tittleStr += " - Clock Time: " + str(clockTime)
+    tittleStr += " - Clock Time: " + str(systemInfo.clockTime)
+    tittleStr += " - List Size: " + str(systemInfo.listSize)
 
     tittle = drawInfo.largeFont.render(tittleStr, 1, drawInfo.white)
     x = drawInfo.width / 2 - tittle.get_width() / 2
     y = 10
     drawInfo.window.blit(tittle, (x, y))
 
-    controls = drawInfo.font.render(
-        "R - reset | Space - Sort | A - Ascending | D - Descending | ↑ - Increase Speed | ↓ - Decrease Speed",
+    controls1 = drawInfo.font.render(
+        "R - reset | Space - Sort | A - Ascending | D - Descending",
         1,
         drawInfo.white,
     )
-    x = drawInfo.width / 2 - controls.get_width() / 2
+    x = drawInfo.width / 2 - controls1.get_width() / 2
     y += tittle.get_height() + 10
-    drawInfo.window.blit(controls, (x, y))
+    drawInfo.window.blit(controls1, (x, y))
+
+    controls2 = drawInfo.font.render(
+        "↓ Decrease Speed | ↑ Increase Speed  |  ← Decrease List | → Increase List",
+        1,
+        drawInfo.white,
+    )
+    x = drawInfo.width / 2 - controls2.get_width() / 2
+    y += controls1.get_height() + 10
+    drawInfo.window.blit(controls2, (x, y))
 
     algorithms = drawInfo.font.render(
         "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort | M - Merge Sort | H - Heap Sort",
@@ -92,7 +108,7 @@ def drawText(drawInfo, algorithmName, ascending, clockTime):
         drawInfo.white,
     )
     x = drawInfo.width / 2 - algorithms.get_width() / 2
-    y += controls.get_height() + 10
+    y += controls2.get_height() + 10
     drawInfo.window.blit(algorithms, (x, y))
 
 
@@ -392,7 +408,7 @@ def main():
     clock = pygame.time.Clock()
     clockTime = 60
 
-    listSize = 50
+    listSize = 100
     minListVal = 0
     maxListVal = 100
 
@@ -415,7 +431,10 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
+            draw(
+                drawInfo,
+                SystemInfo(sortingAlgorithmName, ascending, clockTime, listSize),
+            )
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -442,12 +461,33 @@ def main():
             elif event.key == pygame.K_UP:
                 if clockTime < 240:
                     clockTime += 30
-                draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
+                draw(
+                    drawInfo,
+                    SystemInfo(sortingAlgorithmName, ascending, clockTime, listSize),
+                )
 
             elif event.key == pygame.K_DOWN:
                 if clockTime > 30:
                     clockTime -= 30
-                draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
+                draw(
+                    drawInfo,
+                    SystemInfo(sortingAlgorithmName, ascending, clockTime, listSize),
+                )
+
+            elif (
+                event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT
+            ) and not sorting:
+                previousListSize = listSize
+
+                if listSize > 50 and event.key == pygame.K_LEFT:
+                    listSize -= 50
+                elif listSize < 400 and event.key == pygame.K_RIGHT:
+                    listSize += 50
+
+                if previousListSize != listSize:
+                    maxListVal = listSize
+                    list = createList(listSize, minListVal, maxListVal)
+                    drawInfo.setList(list)
 
             elif event.key == pygame.K_s and not sorting:
                 sortingAlgorithm = selectionSort
