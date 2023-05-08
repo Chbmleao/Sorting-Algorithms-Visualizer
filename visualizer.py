@@ -268,7 +268,15 @@ def mergeSort(drawInfo, ascending=True):
             r = min(l + (width * 2 - 1), listSize - 1)
             m = min(l + width - 1, listSize - 1)
 
-            merge(list, l, m, r, drawInfo, ascending)
+            merging = True
+            mergeGenerator = merge(list, l, m, r, drawInfo, ascending)
+            while merging:
+                try:
+                    yield True
+                    next(mergeGenerator)
+                except StopIteration:
+                    merging = False
+
             l += width * 2
 
         width *= 2
@@ -293,20 +301,19 @@ def merge(a, l, m, r, drawInfo, ascending=True):
             a[k] = R[j]
             j += 1
         drawList(drawInfo, {k: drawInfo.green}, True)
-        pygame.time.wait(100)
+        yield True
         k += 1
 
     while i < n1:
         a[k] = L[i]
         drawList(drawInfo, {k: drawInfo.green}, True)
-        pygame.time.wait(100)
+        yield True
         i += 1
         k += 1
 
     while j < n2:
         a[k] = R[j]
-        drawList(drawInfo, {k: drawInfo.green}, True)
-        pygame.time.wait(100)
+        yield True
         j += 1
         k += 1
 
@@ -333,12 +340,9 @@ def main():
         clock.tick(60)
 
         if sorting:
-            if sortingAlgorithmName != "Merge Sort":
-                try:
-                    next(sortingAlgorithmGenerator)
-                except StopIteration:
-                    sorting = False
-            else:
+            try:
+                next(sortingAlgorithmGenerator)
+            except StopIteration:
                 sorting = False
         else:
             draw(drawInfo, sortingAlgorithmName, ascending)
