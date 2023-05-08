@@ -83,7 +83,7 @@ def drawText(drawInfo, algorithmName, ascending):
     drawInfo.window.blit(controls, (x, y))
 
     algorithms = drawInfo.font.render(
-        "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort | M - Merge Sort",
+        "S - Selection Sort | I - Insertion Sort | B - Bubble Sort | Q - Quick Sort | M - Merge Sort | H - Heap Sort",
         1,
         drawInfo.white,
     )
@@ -318,6 +318,71 @@ def merge(a, l, m, r, drawInfo, ascending=True):
         k += 1
 
 
+def heapify(list, listSize, i, drawInfo, ascending=True):
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+
+    if left < listSize and (
+        (list[largest] < list[left] and ascending)
+        or (list[largest] > list[left] and not ascending)
+    ):
+        largest = left
+
+    if right < listSize and (
+        (list[largest] < list[right] and ascending)
+        or (list[largest] > list[right] and not ascending)
+    ):
+        largest = right
+
+    if largest != i:
+        list[i], list[largest] = list[largest], list[i]
+        drawList(drawInfo, {i: drawInfo.green, largest: drawInfo.red}, True)
+        yield True
+
+        heapifying = True
+        heapifyGenerator = heapify(list, listSize, largest, drawInfo, ascending)
+
+        while heapifying:
+            try:
+                yield True
+                next(heapifyGenerator)
+            except StopIteration:
+                heapifying = False
+
+
+def heapSort(drawInfo, ascending=True):
+    list = drawInfo.list
+    listSize = len(list)
+
+    for i in range(listSize // 2 - 1, -1, -1):
+        heapifying = True
+        heapifyGenerator = heapify(list, listSize, i, drawInfo, ascending)
+
+        while heapifying:
+            try:
+                yield True
+                next(heapifyGenerator)
+            except StopIteration:
+                heapifying = False
+
+    for i in range(listSize - 1, 0, -1):
+        list[i], list[0] = list[0], list[i]
+
+        drawList(drawInfo, {i: drawInfo.green, 0: drawInfo.red}, True)
+        yield True
+
+        heapifying = True
+        heapifyGenerator = heapify(list, i, 0, drawInfo, ascending)
+
+        while heapifying:
+            try:
+                yield True
+                next(heapifyGenerator)
+            except StopIteration:
+                heapifying = False
+
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -388,6 +453,10 @@ def main():
             elif event.key == pygame.K_m and not sorting:
                 sortingAlgorithm = mergeSort
                 sortingAlgorithmName = "Merge Sort"
+
+            elif event.key == pygame.K_h and not sorting:
+                sortingAlgorithm = heapSort
+                sortingAlgorithmName = "Heap Sort"
 
     pygame.quit()
 
