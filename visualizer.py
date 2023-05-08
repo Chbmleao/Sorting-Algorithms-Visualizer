@@ -54,29 +54,33 @@ def createList(n, minVal, maxVal):
     return list
 
 
-def draw(drawInfo, algorithmName, ascending):
+def draw(drawInfo, algorithmName, ascending, clockTime):
     drawInfo.window.fill(drawInfo.backgroundColor)
 
-    drawText(drawInfo, algorithmName, ascending)
+    drawText(drawInfo, algorithmName, ascending, clockTime)
 
     drawList(drawInfo)
 
     pygame.display.update()
 
 
-def drawText(drawInfo, algorithmName, ascending):
+def drawText(drawInfo, algorithmName, ascending, clockTime):
     tittleStr = algorithmName
     if ascending:
         tittleStr += " - Ascending"
     else:
         tittleStr += " - Descending"
+    tittleStr += " - Clock Time: " + str(clockTime)
+
     tittle = drawInfo.largeFont.render(tittleStr, 1, drawInfo.white)
     x = drawInfo.width / 2 - tittle.get_width() / 2
     y = 10
     drawInfo.window.blit(tittle, (x, y))
 
     controls = drawInfo.font.render(
-        "R - reset | Space - Sort | A - Ascending | D - Descending", 1, drawInfo.white
+        "R - reset | Space - Sort | A - Ascending | D - Descending | ↑ - Increase Speed | ↓ - Decrease Speed",
+        1,
+        drawInfo.white,
     )
     x = drawInfo.width / 2 - controls.get_width() / 2
     y += tittle.get_height() + 10
@@ -386,6 +390,7 @@ def heapSort(drawInfo, ascending=True):
 def main():
     run = True
     clock = pygame.time.Clock()
+    clockTime = 60
 
     listSize = 50
     minListVal = 0
@@ -402,7 +407,7 @@ def main():
     sortingAlgorithmGenerator = None
 
     while run:
-        clock.tick(60)
+        clock.tick(clockTime)
 
         if sorting:
             try:
@@ -410,7 +415,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(drawInfo, sortingAlgorithmName, ascending)
+            draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -433,6 +438,16 @@ def main():
 
             elif event.key == pygame.K_d and not sorting:
                 ascending = False
+
+            elif event.key == pygame.K_UP:
+                if clockTime < 240:
+                    clockTime += 30
+                draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
+
+            elif event.key == pygame.K_DOWN:
+                if clockTime > 30:
+                    clockTime -= 30
+                draw(drawInfo, sortingAlgorithmName, ascending, clockTime)
 
             elif event.key == pygame.K_s and not sorting:
                 sortingAlgorithm = selectionSort
