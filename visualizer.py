@@ -194,6 +194,7 @@ def partition(list, low, high, drawInfo, ascending):
             j -= 1
 
         if i >= j:
+            yield j
             return j
 
         drawList(
@@ -201,24 +202,59 @@ def partition(list, low, high, drawInfo, ascending):
             {i: (drawInfo.red), j: (drawInfo.red), pivotIndex: (drawInfo.pink)},
             True,
         )
-        pygame.time.wait(100)
+        yield True
         list[i], list[j] = list[j], list[i]
         drawList(
             drawInfo,
             {i: (drawInfo.green), j: (drawInfo.green), pivotIndex: (drawInfo.pink)},
             True,
         )
-        pygame.time.wait(100)
+        yield True
 
 
 def quickSort(drawInfo, ascending=True):
     def _quickSort(drawInfo, low, high, ascending=True):
         if low < high:
-            splitIndex = partition(drawInfo.list, low, high, drawInfo, ascending)
-            _quickSort(drawInfo, low, splitIndex, ascending)
-            _quickSort(drawInfo, splitIndex + 1, high, ascending)
+            partitioning = True
+            partitionGenerator = partition(
+                drawInfo.list, low, high, drawInfo, ascending
+            )
+            splitIndex = 0
 
-    _quickSort(drawInfo, 0, len(drawInfo.list) - 1, ascending)
+            while partitioning:
+                try:
+                    yield True
+                    splitIndex = next(partitionGenerator)
+                except StopIteration:
+                    partitioning = False
+
+            quickSorting = True
+            quickSortGenerator = _quickSort(drawInfo, low, splitIndex, ascending)
+            while quickSorting:
+                try:
+                    yield True
+                    next(quickSortGenerator)
+                except StopIteration:
+                    quickSorting = False
+
+            quickSorting = True
+            quickSortGenerator = _quickSort(drawInfo, splitIndex + 1, high, ascending)
+            while quickSorting:
+                try:
+                    yield True
+                    next(quickSortGenerator)
+                except StopIteration:
+                    quickSorting = False
+
+    quickSorting = True
+    quickSortGenerator = _quickSort(drawInfo, 0, len(drawInfo.list) - 1, ascending)
+
+    while quickSorting:
+        try:
+            yield True
+            next(quickSortGenerator)
+        except StopIteration:
+            quickSorting = False
 
 
 def mergeSort(drawInfo, ascending=True):
@@ -297,10 +333,7 @@ def main():
         clock.tick(60)
 
         if sorting:
-            if (
-                sortingAlgorithmName != "Quick Sort"
-                and sortingAlgorithmName != "Merge Sort"
-            ):
+            if sortingAlgorithmName != "Merge Sort":
                 try:
                     next(sortingAlgorithmGenerator)
                 except StopIteration:
