@@ -116,9 +116,9 @@ def drawList(drawInfo, colorPositions={}, clearBackground=False):
     if clearBackground:
         clearRect = (
             drawInfo.sidePad // 2,
-            drawInfo.topPad,
+            drawInfo.topPad - 30,
             drawInfo.width - drawInfo.sidePad // 2,
-            drawInfo.height - drawInfo.topPad,
+            drawInfo.height - drawInfo.topPad + 30,
         )
         pygame.draw.rect(drawInfo.window, drawInfo.backgroundColor, clearRect)
 
